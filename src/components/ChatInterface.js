@@ -1,15 +1,28 @@
 import React, { useRef, useEffect } from "react";
 import {
-  Box,
-  Paper,
+  CircularProgress,
+  Avatar,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
+  Paper,
+  Box,
 } from "@mui/material";
+import { styled } from "@mui/system";
+import { UserCircle } from "lucide-react";
 
-function ChatInterface({ messages }) {
+const MessageContainer = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[1],
+}));
+
+const MessageContent = styled(Typography)(({ theme }) => ({
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+}));
+
+const ChatInterface = ({ messages, isLoading, isTyping }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -19,42 +32,58 @@ function ChatInterface({ messages }) {
   useEffect(scrollToBottom, [messages]);
 
   return (
-    <Paper elevation={3} sx={{ flexGrow: 1, overflowY: "auto", p: 2, mb: 2 }}>
-      <List>
-        {messages.map((message, index) => (
-          <React.Fragment key={index}>
-            <ListItem alignItems="flex-start">
-              <ListItemText
-                primary={
-                  <Typography
-                    component="span"
-                    variant="body1"
-                    color={message.sender === "user" ? "primary" : "secondary"}
-                    fontWeight="bold"
-                  >
-                    {message.sender === "user" ? "You" : "Assistant"}
-                  </Typography>
-                }
-                secondary={
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    color="text.primary"
-                  >
-                    {message.content}
-                  </Typography>
-                }
-              />
-            </ListItem>
-            {index < messages.length - 1 && (
-              <Divider variant="inset" component="li" />
-            )}
-          </React.Fragment>
-        ))}
-      </List>
+    <Box
+      sx={{
+        height: "100%",
+        overflowY: "auto",
+        padding: 2,
+        backgroundColor: (theme) => theme.palette.background.default,
+      }}
+    >
+      {messages.map((message, index) => (
+        <MessageContainer key={index} elevation={1}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", mb: 1 }}>
+            <Avatar
+              sx={{
+                mr: 2,
+                bgcolor:
+                  message.sender === "user" ? "primary.main" : "secondary.main",
+              }}
+            >
+              <UserCircle />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                {message.sender === "user" ? "User" : "Assistant"}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Today at {new Date().toLocaleTimeString()}
+              </Typography>
+            </Box>
+          </Box>
+          <MessageContent variant="body1">{message.content}</MessageContent>
+        </MessageContainer>
+      ))}
+      {isLoading && (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+          <CircularProgress />
+        </Box>
+      )}
+      {isTyping && (
+        <MessageContainer elevation={1}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>
+              <UserCircle />
+            </Avatar>
+            <Typography variant="body2" color="text.secondary">
+              Assistant is typing...
+            </Typography>
+          </Box>
+        </MessageContainer>
+      )}
       <div ref={messagesEndRef} />
-    </Paper>
+    </Box>
   );
-}
+};
 
 export default ChatInterface;
