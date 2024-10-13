@@ -1,5 +1,5 @@
 /* global chrome */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -20,6 +20,10 @@ function AudioControls({
 }) {
   const [selectedSource, setSelectedSource] = useState("microphone");
   const [stream, setStream] = useState(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const silenceTimeoutRef = useRef(null);
+  const recordingChunksRef = useRef([]);
 
   useEffect(() => {
     return () => {
@@ -33,11 +37,66 @@ function AudioControls({
   const startRecording = (audioStream) => {
     console.log("Starting recording...");
     const mediaRecorder = new MediaRecorder(audioStream);
+    let isRecordingAudio = false;
+
+    if (selectedSource === "screen") {
+      audioContextRef.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      const source =
+        audioContextRef.current.createMediaStreamSource(audioStream);
+      source.connect(analyserRef.current);
+
+      const checkAudioLevel = () => {
+        const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+        analyserRef.current.getByteFrequencyData(dataArray);
+        const average =
+          dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+
+        if (average > 13) {
+          // Adjust this threshold as needed
+          if (!isRecordingAudio) {
+            isRecordingAudio = true;
+            mediaRecorder.start();
+            console.log("Audio detected, starting recording");
+          }
+          clearTimeout(silenceTimeoutRef.current);
+          silenceTimeoutRef.current = setTimeout(() => {
+            if (isRecordingAudio) {
+              mediaRecorder.stop();
+              isRecordingAudio = false;
+              console.log("Silence detected, stopping recording");
+            }
+          }, 1000); // Adjust this delay as needed
+        }
+        requestAnimationFrame(checkAudioLevel);
+      };
+
+      checkAudioLevel();
+    } else {
+      mediaRecorder.start(10000); // For microphone, keep the original behavior
+    }
 
     mediaRecorder.ondataavailable = (event) => {
-      console.log("Recording data available:", event.data);
       if (event.data.size > 0) {
-        onAudioData(event.data);
+        if (selectedSource === "screen") {
+          recordingChunksRef.current.push(event.data);
+        } else {
+          onAudioData(event.data);
+        }
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      if (
+        selectedSource === "screen" &&
+        recordingChunksRef.current.length > 0
+      ) {
+        const blob = new Blob(recordingChunksRef.current, {
+          type: "audio/webm",
+        });
+        onAudioData(blob);
+        recordingChunksRef.current = [];
       }
     };
 
@@ -45,7 +104,6 @@ function AudioControls({
       console.error("MediaRecorder error:", error);
     };
 
-    mediaRecorder.start(10000); // Capture in 10-second chunks
     console.log("MediaRecorder started");
     onStartRecording();
   };
