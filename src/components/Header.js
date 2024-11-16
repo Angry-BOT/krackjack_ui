@@ -1,29 +1,40 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Box } from "@mui/material";
-import { styled } from "@mui/system";
+import { AppBar, Toolbar, Typography, Box, Icon } from "@mui/material";
+import { styled, alpha } from "@mui/material/styles";
 import { Hash } from "lucide-react";
 import AudioControls from "./AudioControls";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
-  boxShadow:
-    "0 1px 0 rgba(4,4,5,0.2),0 1.5px 0 rgba(6,6,7,0.05),0 2px 0 rgba(4,4,5,0.05)",
-}));
-
-const ChannelName = styled(Typography)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  color: theme.palette.text.primary,
-  fontWeight: 600,
+  backdropFilter: "blur(8px)",
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: "none",
 }));
 
 const Header = ({ title, audioControlsProps }) => {
   return (
-    <StyledAppBar position="static">
-      <Toolbar sx={{ justifyContent: "space-between" }}>
+    <StyledAppBar position="sticky">
+      <Toolbar
+        sx={{
+          justifyContent: "space-between",
+          minHeight: 64,
+          px: { xs: 2, sm: 4 },
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Hash size={24} style={{ marginRight: "8px", color: "#8e9297" }} />
-          <ChannelName variant="h6">{title}</ChannelName>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "primary.main",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Icon component={Hash} sx={{ fontSize: 24 }} />
+            {title}
+          </Typography>
         </Box>
         <AudioControls {...audioControlsProps} />
       </Toolbar>

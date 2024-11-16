@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { styled } from "@mui/material/styles";
 import {
   Dialog,
   DialogTitle,
@@ -7,6 +8,15 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialog-paper": {
+    borderRadius: 20,
+    padding: theme.spacing(2),
+    backgroundColor: theme.palette.background.paper,
+    maxWidth: 600,
+  },
+}));
 
 function SetupDialog({ onSetupComplete }) {
   const [jobDescription, setJobDescription] = useState("");
@@ -18,16 +28,32 @@ function SetupDialog({ onSetupComplete }) {
   };
 
   return (
-    <Dialog open={true} fullWidth maxWidth="sm">
-      <DialogTitle>Interview Assistant Setup</DialogTitle>
+    <StyledDialog open={true} fullWidth>
+      <DialogTitle
+        sx={{
+          textAlign: "center",
+          fontSize: "1.5rem",
+          fontWeight: 500,
+          color: "primary.main",
+        }}
+      >
+        Interview Assistant Setup
+      </DialogTitle>
       <form onSubmit={handleSubmit}>
-        <DialogContent>
+        <DialogContent sx={{ py: 3 }}>
           <TextField
             fullWidth
             margin="normal"
             label="Job Description"
             multiline
             rows={4}
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                backgroundColor: "background.default",
+              },
+            }}
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             required
@@ -38,18 +64,33 @@ function SetupDialog({ onSetupComplete }) {
             label="Your Background"
             multiline
             rows={4}
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                backgroundColor: "background.default",
+              },
+            }}
             value={intervieweeBackground}
             onChange={(e) => setIntervieweeBackground(e.target.value)}
             required
           />
         </DialogContent>
-        <DialogActions>
-          <Button type="submit" variant="contained" color="primary">
-            Start Interview Assistant
+        <DialogActions sx={{ px: 3, pb: 3, justifyContent: "center" }}>
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            sx={{
+              minWidth: 200,
+              fontWeight: 500,
+            }}
+          >
+            Start Interview
           </Button>
         </DialogActions>
       </form>
-    </Dialog>
+    </StyledDialog>
   );
 }
 

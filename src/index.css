@@ -4,14 +4,9 @@
 
 /* You can add any global styles here */
 body {
-  @apply bg-gray-900 text-white;
-}
-
-body {
+  @apply bg-[#202124] text-white;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: "Google Sans", "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,3 +15,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+/* Sets the width and height of the scrollbar */
+::-webkit-scrollbar {
+  width: 8px; /* Width for vertical scrollbar */
+  height: 8px; /* Height for horizontal scrollbar */
+}
+
+/* Styles the track (the area the thumb moves in) */
+::-webkit-scrollbar-track {
+  background: transparent; /* Makes the track invisible */
+}
+
+/* Styles the draggable scrolling element */
+::-webkit-scrollbar-thumb {
+  background: #5f6368; /* Google's dark theme scrollbar color */
+  border-radius: 4px; /* Rounded corners */
+}
+
+/* Hover state for the thumb */
+::-webkit-scrollbar-thumb:hover {
+  background: #7d8085; /* Lighter shade on hover for feedback */
+}
+
+/* Imports Google Sans font with multiple weights */
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap");
