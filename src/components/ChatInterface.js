@@ -5,6 +5,7 @@ import {
   Typography,
   Paper,
   Box,
+  alpha,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { UserCircle } from "lucide-react";
@@ -14,12 +15,37 @@ const MessageContainer = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   backgroundColor: theme.palette.background.paper,
   borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[1],
+  transition: "transform 0.2s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-2px)",
+  },
+  boxShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
+  "@media (max-width: 600px)": {
+    padding: theme.spacing(1.5),
+  },
 }));
 
 const MessageContent = styled(Typography)(({ theme }) => ({
   whiteSpace: "pre-wrap",
   wordBreak: "break-word",
+  lineHeight: 1.6,
+  fontSize: "1rem",
+  color: theme.palette.text.primary,
+  "@media (max-width: 600px)": {
+    fontSize: "0.95rem",
+  },
+}));
+
+const StyledAvatar = styled(Avatar)(({ theme }) => ({
+  width: 40,
+  height: 40,
+  borderRadius: "50%",
+  boxShadow: theme.shadows[2],
+  border: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  backgroundColor: theme.palette.background.default,
+  "& img": {
+    objectFit: "cover",
+  },
 }));
 
 const ChatInterface = ({ messages, isLoading, isTyping }) => {

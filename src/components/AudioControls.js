@@ -11,6 +11,47 @@ import {
 import MicIcon from "@mui/icons-material/Mic";
 import StopIcon from "@mui/icons-material/Stop";
 import ScreenShareIcon from "@mui/icons-material/ScreenShare";
+import { styled, alpha } from "@mui/material/styles";
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  borderRadius: 20, // Pill-shaped select dropdown
+  backgroundColor: theme.palette.background.default, // Slightly darker background
+  "& .MuiOutlinedInput-notchedOutline": {
+    // Styling for the outline/border
+    borderColor: alpha(theme.palette.divider, 0.1), // Very subtle border
+  },
+  // Add these additional styles for better interactivity
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: alpha(theme.palette.divider, 0.2), // Slightly more visible on hover
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.palette.primary.main, // Google blue when focused
+  },
+  // Add styles for the dropdown icon
+  "& .MuiSelect-icon": {
+    color: theme.palette.text.secondary,
+  },
+}));
+
+const RecordButton = styled(Button)(({ theme }) => ({
+  minWidth: 120, // Ensures button doesn't get too narrow
+  height: 40, // Consistent height with select
+  borderRadius: 20, // Pill-shaped button
+  fontWeight: 500, // Medium weight text
+  // Add these additional styles for better UX
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-1px)",
+    boxShadow: theme.shadows[4],
+  },
+  // Different styles based on recording state
+  "&.recording": {
+    backgroundColor: theme.palette.error.main,
+    "&:hover": {
+      backgroundColor: theme.palette.error.dark,
+    },
+  },
+}));
 
 function AudioControls({
   isRecording,
@@ -67,7 +108,7 @@ function AudioControls({
               isRecordingAudio = false;
               console.log("Silence detected, stopping recording");
             }
-          }, 1000); // Adjust this delay as needed
+          }, 2000); // Adjust this delay as needed
         }
         requestAnimationFrame(checkAudioLevel);
       };
@@ -159,7 +200,7 @@ function AudioControls({
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
-        <Select
+        <StyledSelect
           value={selectedSource}
           onChange={(e) => setSelectedSource(e.target.value)}
           disabled={isRecording}
@@ -167,9 +208,9 @@ function AudioControls({
         >
           <MenuItem value="microphone">Microphone</MenuItem>
           <MenuItem value="screen">Screen Audio</MenuItem>
-        </Select>
+        </StyledSelect>
       </FormControl>
-      <Button
+      <RecordButton
         variant="contained"
         color={isRecording ? "secondary" : "primary"}
         startIcon={
@@ -186,7 +227,7 @@ function AudioControls({
         sx={{ height: 40 }}
       >
         {isRecording ? "Stop" : "Record"}
-      </Button>
+      </RecordButton>
     </Box>
   );
 }
