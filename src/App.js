@@ -1,8 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ThemeProvider, createTheme, CssBaseline, Box } from "@mui/material";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  Box,
+  Alert,
+  Snackbar,
+  Button,
+} from "@mui/material";
 import SetupDialog from "./components/SetupDialog";
 import ChatInterface from "./components/ChatInterface";
 import Header from "./components/Header";
+import { RefreshCw } from "lucide-react";
 
 const theme = createTheme({
   palette: {
@@ -67,20 +76,36 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const socketRef = useRef(null);
+  const [wsStatus, setWsStatus] = useState("connecting");
+  const [showRetrySnackbar, setShowRetrySnackbar] = useState(false);
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
+  const reconnectTimeout = useRef(null);
+  const lastMessageTime = useRef(Date.now());
+  const connectionCheckInterval = useRef(null);
+  const [isListening, setIsListening] = useState(false);
 
-  useEffect(() => {
+  const connectWebSocket = useCallback(() => {
     console.log("Initializing WebSocket connection...");
+    if (socketRef.current) {
+      socketRef.current.close();
+    }
+
     socketRef.current = new WebSocket("ws://localhost:8080/interview");
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connection established successfully");
+      lastMessageTime.current = Date.now();
+      reconnectAttempts.current = 0;
+      setShowRetrySnackbar(false);
     };
 
     socketRef.current.onmessage = (event) => {
-      console.log("Received WebSocket message");
+      lastMessageTime.current = Date.now(); // Update last message time
       const response = JSON.parse(event.data);
       if (response.type === "transcription") {
         console.log("Processing transcription:", response.content);
+        setIsListening(false);
         addMessage("user", response.content);
         setIsLoading(true);
         setIsTyping(true);
@@ -94,17 +119,43 @@ function App() {
       }
     };
 
-    socketRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
+    socketRef.current.onclose = () => {
+      console.log("WebSocket connection closed");
+      handleReconnect();
     };
 
-    return () => {
-      if (socketRef.current) {
-        console.log("Closing WebSocket connection...");
-        socketRef.current.close();
-      }
+    socketRef.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      setShowRetrySnackbar(true);
     };
   }, []);
+
+  const handleReconnect = useCallback(() => {
+    if (reconnectAttempts.current < maxReconnectAttempts) {
+      reconnectAttempts.current += 1;
+      setShowRetrySnackbar(true);
+      reconnectTimeout.current = setTimeout(() => {
+        connectWebSocket();
+      }, 500000); // Retry timer
+    }
+  }, [connectWebSocket]);
+
+  const handleManualRetry = () => {
+    reconnectAttempts.current = 0;
+    connectWebSocket();
+  };
+
+  useEffect(() => {
+    connectWebSocket();
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+      }
+    };
+  }, [connectWebSocket]);
 
   const handleSetupComplete = (jd, background) => {
     console.log("Setup completed. Job Description:", jd);
@@ -139,12 +190,16 @@ function App() {
   const handleStopRecording = () => {
     console.log("Stopping audio recording...");
     setIsRecording(false);
+    setIsListening(false);
   };
 
   const handleAudioData = (audioBlob) => {
     console.log("Received audio data. Blob size:", audioBlob.size, "bytes");
-    console.log("Sending audio data to WebSocket server...");
-    socketRef.current.send(audioBlob);
+    if (audioBlob.size > 0) {
+      setIsListening(true);
+      console.log("Sending audio data to WebSocket server...");
+      socketRef.current.send(audioBlob);
+    }
   };
 
   const audioControlsProps = {
@@ -152,6 +207,7 @@ function App() {
     onStartRecording: handleStartRecording,
     onStopRecording: handleStopRecording,
     onAudioData: handleAudioData,
+    isListening,
   };
 
   return (
@@ -186,11 +242,33 @@ function App() {
                   messages={messages}
                   isLoading={isLoading}
                   isTyping={isTyping}
+                  isListening={isListening}
                 />
               </Box>
             </Box>
           </>
         )}
+
+        <Snackbar
+          open={showRetrySnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            severity="error"
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<RefreshCw />}
+                onClick={handleManualRetry}
+              >
+                Retry Now
+              </Button>
+            }
+          >
+            Connection lost. Attempting to reconnect...
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );

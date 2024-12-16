@@ -7,11 +7,14 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Typography,
 } from "@mui/material";
 import MicIcon from "@mui/icons-material/Mic";
 import StopIcon from "@mui/icons-material/Stop";
 import ScreenShareIcon from "@mui/icons-material/ScreenShare";
 import { styled, alpha } from "@mui/material/styles";
+import { Mic, StopCircle, ScreenShare } from "lucide-react";
+import { PulseLoader } from "react-spinners";
 
 const StyledSelect = styled(Select)(({ theme }) => ({
   borderRadius: 20, // Pill-shaped select dropdown
@@ -58,6 +61,7 @@ function AudioControls({
   onStartRecording,
   onStopRecording,
   onAudioData,
+  isListening,
 }) {
   const [selectedSource, setSelectedSource] = useState("microphone");
   const [stream, setStream] = useState(null);
@@ -115,7 +119,7 @@ function AudioControls({
 
       checkAudioLevel();
     } else {
-      mediaRecorder.start(10000); // For microphone, keep the original behavior
+      mediaRecorder.start(1000); // Reduce chunk size for more responsive listening indicator
     }
 
     mediaRecorder.ondataavailable = (event) => {
@@ -210,24 +214,35 @@ function AudioControls({
           <MenuItem value="screen">Screen Audio</MenuItem>
         </StyledSelect>
       </FormControl>
-      <RecordButton
-        variant="contained"
-        color={isRecording ? "secondary" : "primary"}
-        startIcon={
-          isRecording ? (
-            <StopIcon />
-          ) : selectedSource === "screen" ? (
-            <ScreenShareIcon />
-          ) : (
-            <MicIcon />
-          )
-        }
-        onClick={isRecording ? handleStopRecording : handleStartRecording}
-        disabled={!selectedSource}
-        sx={{ height: 40 }}
-      >
-        {isRecording ? "Stop" : "Record"}
-      </RecordButton>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <RecordButton
+          variant="contained"
+          color={isRecording ? "secondary" : "primary"}
+          startIcon={
+            isRecording ? (
+              <StopCircle />
+            ) : selectedSource === "screen" ? (
+              <ScreenShare />
+            ) : (
+              <Mic />
+            )
+          }
+          onClick={isRecording ? handleStopRecording : handleStartRecording}
+          disabled={!selectedSource}
+          sx={{ height: 40 }}
+        >
+          {isRecording ? "Stop" : "Record"}
+        </RecordButton>
+
+        {isListening && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <PulseLoader size={8} color="#8ab4f8" />
+            <Typography variant="caption" color="primary">
+              Listening...
+            </Typography>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }
