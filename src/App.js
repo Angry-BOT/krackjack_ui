@@ -105,7 +105,6 @@ function App() {
       const response = JSON.parse(event.data);
       if (response.type === "transcription") {
         console.log("Processing transcription:", response.content);
-        setIsListening(false);
         addMessage("user", response.content);
         setIsLoading(true);
         setIsTyping(true);
@@ -185,6 +184,7 @@ function App() {
   const handleStartRecording = () => {
     console.log("Starting audio recording...");
     setIsRecording(true);
+    setIsListening(true);
   };
 
   const handleStopRecording = () => {
@@ -196,7 +196,6 @@ function App() {
   const handleAudioData = (audioBlob) => {
     console.log("Received audio data. Blob size:", audioBlob.size, "bytes");
     if (audioBlob.size > 0) {
-      setIsListening(true);
       console.log("Sending audio data to WebSocket server...");
       socketRef.current.send(audioBlob);
     }
