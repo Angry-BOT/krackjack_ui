@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   CircularProgress,
   Avatar,
@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { UserCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { PulseLoader } from "react-spinners";
 
 const MessageContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -48,7 +50,27 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
   },
 }));
 
-const ChatInterface = ({ messages, isLoading, isTyping }) => {
+const TypewriterText = ({ text }) => {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    let index = 0;
+    const timer = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText((prev) => prev + text.charAt(index));
+        index++;
+      } else {
+        clearInterval(timer);
+      }
+    }, 5); // Adjust speed as needed
+
+    return () => clearInterval(timer);
+  }, [text]);
+
+  return <span>{displayedText}</span>;
+};
+
+const ChatInterface = ({ messages, isLoading, isTyping, isListening }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -66,30 +88,71 @@ const ChatInterface = ({ messages, isLoading, isTyping }) => {
         backgroundColor: (theme) => theme.palette.background.default,
       }}
     >
-      {messages.map((message, index) => (
-        <MessageContainer key={index} elevation={1}>
-          <Box sx={{ display: "flex", alignItems: "flex-start", mb: 1 }}>
-            <Avatar
-              sx={{
-                mr: 2,
-                bgcolor:
-                  message.sender === "user" ? "primary.main" : "secondary.main",
-              }}
-            >
-              <UserCircle />
-            </Avatar>
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                {message.sender === "user" ? "User" : "Assistant"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Today at {new Date().toLocaleTimeString()}
-              </Typography>
+      <AnimatePresence>
+        {messages.map((message, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <MessageContainer elevation={1}>
+              <Box sx={{ display: "flex", alignItems: "flex-start", mb: 1 }}>
+                <Avatar
+                  sx={{
+                    mr: 2,
+                    bgcolor:
+                      message.sender === "user"
+                        ? "primary.main"
+                        : "secondary.main",
+                  }}
+                >
+                  <UserCircle />
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                    {message.sender === "user" ? "User" : "Assistant"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Today at {new Date().toLocaleTimeString()}
+                  </Typography>
+                </Box>
+              </Box>
+              <MessageContent variant="body1">
+                {message.sender === "assistant" ? (
+                  <TypewriterText text={message.content} />
+                ) : (
+                  message.content
+                )}
+              </MessageContent>
+            </MessageContainer>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      {isListening && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          <MessageContainer elevation={1}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Avatar sx={{ bgcolor: "primary.main" }}>
+                <UserCircle />
+              </Avatar>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <PulseLoader size={8} color="#8ab4f8" />
+                <Typography variant="body2" color="text.secondary">
+                  Listening...
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-          <MessageContent variant="body1">{message.content}</MessageContent>
-        </MessageContainer>
-      ))}
+          </MessageContainer>
+        </motion.div>
+      )}
+
       {isLoading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
           <CircularProgress />
