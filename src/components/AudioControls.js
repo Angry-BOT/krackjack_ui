@@ -119,7 +119,7 @@ function AudioControls({
 
       checkAudioLevel();
     } else {
-      mediaRecorder.start(1000); // Reduce chunk size for more responsive listening indicator
+      mediaRecorder.start(100); // Reduce chunk size for more responsive listening indicator
     }
 
     mediaRecorder.ondataavailable = (event) => {
@@ -234,14 +234,14 @@ function AudioControls({
           {isRecording ? "Stop" : "Record"}
         </RecordButton>
 
-        {isListening && (
+        {/* {isListening && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <PulseLoader size={8} color="#8ab4f8" />
             <Typography variant="caption" color="primary">
               Listening...
             </Typography>
           </Box>
-        )}
+        )} */}
       </Box>
     </Box>
   );
