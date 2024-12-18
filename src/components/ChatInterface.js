@@ -11,6 +11,7 @@ import { styled } from "@mui/system";
 import { UserCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PulseLoader } from "react-spinners";
+import CodeBlock from "./CodeBlock";
 
 const MessageContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -33,6 +34,10 @@ const MessageContent = styled(Typography)(({ theme }) => ({
   lineHeight: 1.6,
   fontSize: "1rem",
   color: theme.palette.text.primary,
+  "& code": {
+    fontFamily:
+      'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
+  },
   "@media (max-width: 600px)": {
     fontSize: "0.95rem",
   },
@@ -68,6 +73,39 @@ const TypewriterText = ({ text }) => {
   }, [text]);
 
   return <span>{displayedText}</span>;
+};
+
+const parseMessageContent = (content) => {
+  const codeBlockRegex = /```([a-zA-Z]*)\n([\s\S]*?)```/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({
+        type: "text",
+        content: content.slice(lastIndex, match.index),
+      });
+    }
+
+    parts.push({
+      type: "code",
+      language: match[1],
+      content: match[2].trim(),
+    });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push({
+      type: "text",
+      content: content.slice(lastIndex),
+    });
+  }
+
+  return parts;
 };
 
 const ChatInterface = ({ messages, isLoading, isTyping, isListening }) => {
@@ -120,11 +158,15 @@ const ChatInterface = ({ messages, isLoading, isTyping, isListening }) => {
                 </Box>
               </Box>
               <MessageContent variant="body1">
-                {message.sender === "assistant" ? (
-                  <TypewriterText text={message.content} />
-                ) : (
-                  message.content
-                )}
+                {message.sender === "assistant"
+                  ? parseMessageContent(message.content).map((part, index) =>
+                      part.type === "code" ? (
+                        <CodeBlock key={index} content={part.content} />
+                      ) : (
+                        <span key={index}>{part.content}</span>
+                      )
+                    )
+                  : message.content}
               </MessageContent>
             </MessageContainer>
           </motion.div>

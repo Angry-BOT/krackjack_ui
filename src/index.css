@@ -40,3 +40,24 @@ code {
 
 /* Imports Google Sans font with multiple weights */
 @import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap");
+
+/* Add these styles after your existing styles */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(45deg, #8ab4f8 30%, #81c995 90%);
+  background-size: 200% 200%;
+  animation: gradient 5s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

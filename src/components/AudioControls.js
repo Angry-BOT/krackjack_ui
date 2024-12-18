@@ -112,7 +112,7 @@ function AudioControls({
               isRecordingAudio = false;
               console.log("Silence detected, stopping recording");
             }
-          }, 2000); // Adjust this delay as needed
+          }, 1000); // Adjust this delay as needed
         }
         requestAnimationFrame(checkAudioLevel);
       };
