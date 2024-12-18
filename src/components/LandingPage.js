@@ -1,9 +1,11 @@
 import React from "react";
-import { Box, Typography, Button, Container } from "@mui/material";
+import { Box, Typography, Button, Container, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 const LandingPage = ({ onGetStarted }) => {
+  const theme = useTheme();
+
   return (
     <Container maxWidth="lg">
       <Box
@@ -27,9 +29,11 @@ const LandingPage = ({ onGetStarted }) => {
             sx={{
               fontSize: { xs: "3rem", md: "4.5rem" },
               fontWeight: 700,
-              background: "linear-gradient(45deg, #8ab4f8 30%, #81c995 90%)",
-              backgroundClip: "text",
-              textFillColor: "transparent",
+              color: "text.primary",
+              textShadow:
+                theme.palette.mode === "dark"
+                  ? "0 0 20px rgba(255, 255, 255, 0.1)"
+                  : "0 0 20px rgba(0, 0, 0, 0.1)",
               mb: 2,
             }}
           >
@@ -44,10 +48,10 @@ const LandingPage = ({ onGetStarted }) => {
         >
           <Typography
             variant="h2"
-            color="text.secondary"
             sx={{
               fontSize: { xs: "1.5rem", md: "2rem" },
               fontWeight: 500,
+              color: "text.secondary",
               mb: 6,
             }}
           >

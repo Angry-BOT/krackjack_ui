@@ -28,21 +28,6 @@ const MessageContainer = styled(Paper)(({ theme }) => ({
   },
 }));
 
-const MessageContent = styled(Typography)(({ theme }) => ({
-  whiteSpace: "pre-wrap",
-  wordBreak: "break-word",
-  lineHeight: 1.6,
-  fontSize: "1rem",
-  color: theme.palette.text.primary,
-  "& code": {
-    fontFamily:
-      'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
-  },
-  "@media (max-width: 600px)": {
-    fontSize: "0.95rem",
-  },
-}));
-
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
   width: 40,
   height: 40,
@@ -76,12 +61,15 @@ const TypewriterText = ({ text }) => {
 };
 
 const parseMessageContent = (content) => {
-  const codeBlockRegex = /```([a-zA-Z]*)\n([\s\S]*?)```/g;
+  if (!content) return [];
+
+  const codeBlockRegex = /```([\w]*)\n([\s\S]*?)```/g;
   const parts = [];
   let lastIndex = 0;
   let match;
 
   while ((match = codeBlockRegex.exec(content)) !== null) {
+    // Add text before code block
     if (match.index > lastIndex) {
       parts.push({
         type: "text",
@@ -89,6 +77,7 @@ const parseMessageContent = (content) => {
       });
     }
 
+    // Add code block
     parts.push({
       type: "code",
       language: match[1],
@@ -98,6 +87,7 @@ const parseMessageContent = (content) => {
     lastIndex = match.index + match[0].length;
   }
 
+  // Add remaining text
   if (lastIndex < content.length) {
     parts.push({
       type: "text",
@@ -106,6 +96,40 @@ const parseMessageContent = (content) => {
   }
 
   return parts;
+};
+
+const MessageContent = ({ content }) => {
+  const parts = parseMessageContent(content);
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.type === "code" ? (
+          <CodeBlock
+            key={index}
+            content={part.content}
+            language={part.language}
+          />
+        ) : (
+          <Typography
+            key={index}
+            sx={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              lineHeight: 1.6,
+              fontSize: "1rem",
+              color: "text.primary",
+              "@media (max-width: 600px)": {
+                fontSize: "0.95rem",
+              },
+            }}
+          >
+            {part.content}
+          </Typography>
+        )
+      )}
+    </>
+  );
 };
 
 const ChatInterface = ({ messages, isLoading, isTyping, isListening }) => {
@@ -157,17 +181,9 @@ const ChatInterface = ({ messages, isLoading, isTyping, isListening }) => {
                   </Typography>
                 </Box>
               </Box>
-              <MessageContent variant="body1">
-                {message.sender === "assistant"
-                  ? parseMessageContent(message.content).map((part, index) =>
-                      part.type === "code" ? (
-                        <CodeBlock key={index} content={part.content} />
-                      ) : (
-                        <span key={index}>{part.content}</span>
-                      )
-                    )
-                  : message.content}
-              </MessageContent>
+              <Box sx={{ flex: 1 }}>
+                <MessageContent content={message.content} />
+              </Box>
             </MessageContainer>
           </motion.div>
         ))}

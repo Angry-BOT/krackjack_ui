@@ -13,60 +13,87 @@ import SetupDialog from "./components/SetupDialog";
 import ChatInterface from "./components/ChatInterface";
 import Header from "./components/Header";
 import { RefreshCw } from "lucide-react";
+import ThemeToggle from "./components/ThemeToggle";
 
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-    background: {
-      default: "#202124",
-      paper: "#292a2d",
+const createAppTheme = (mode) =>
+  createTheme({
+    palette: {
+      mode,
+      ...(mode === "dark"
+        ? {
+            // Dark theme
+            background: {
+              default: "#202124",
+              paper: "#292a2d",
+            },
+            primary: {
+              main: "#8ab4f8",
+              dark: "#669df6",
+              light: "#adc6ff",
+            },
+            secondary: {
+              main: "#81c995",
+              dark: "#5bb974",
+              light: "#a8dab5",
+            },
+            text: {
+              primary: "#e8eaed",
+              secondary: "#9aa0a6",
+            },
+          }
+        : {
+            // Light theme
+            background: {
+              default: "#ffffff",
+              paper: "#f8f9fa",
+            },
+            primary: {
+              main: "#1a73e8",
+              dark: "#1557b0",
+              light: "#4285f4",
+            },
+            secondary: {
+              main: "#34a853",
+              dark: "#1e8e3e",
+              light: "#81c995",
+            },
+            text: {
+              primary: "#202124",
+              secondary: "#5f6368",
+            },
+          }),
     },
-    primary: {
-      main: "#8ab4f8",
-      dark: "#669df6",
-      light: "#adc6ff",
+    typography: {
+      fontFamily: "'Google Sans', 'Roboto', sans-serif",
+      h6: {
+        fontWeight: 500,
+      },
+      button: {
+        textTransform: "none",
+        fontWeight: 500,
+      },
     },
-    secondary: {
-      main: "#81c995",
-      dark: "#5bb974",
-      light: "#a8dab5",
+    shape: {
+      borderRadius: 12,
     },
-    text: {
-      primary: "#e8eaed",
-      secondary: "#9aa0a6",
-    },
-  },
-  typography: {
-    fontFamily: "'Google Sans', 'Roboto', sans-serif",
-    h6: {
-      fontWeight: 500,
-    },
-    button: {
-      textTransform: "none",
-      fontWeight: 500,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 20,
-          padding: "8px 24px",
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 20,
+            padding: "8px 24px",
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: "none",
+          },
         },
       },
     },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: "none",
-        },
-      },
-    },
-  },
-});
+  });
 
 function App() {
   const [showLanding, setShowLanding] = useState(true);
@@ -86,6 +113,21 @@ function App() {
   const lastMessageTime = useRef(Date.now());
   const connectionCheckInterval = useRef(null);
   const [isListening, setIsListening] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("theme-mode");
+    return savedMode ? savedMode === "dark" : true; // Default to dark mode
+  });
+
+  // Save theme preference to localStorage
+  useEffect(() => {
+    localStorage.setItem("theme-mode", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
+  const theme = createAppTheme(isDarkMode ? "dark" : "light");
+
+  const handleThemeToggle = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   const connectWebSocket = useCallback(() => {
     console.log("Initializing WebSocket connection...");
@@ -215,6 +257,13 @@ function App() {
     setShowLanding(false);
   };
 
+  const handleConfigureClick = () => {
+    setMessages([]);
+    setIsSetupComplete(false);
+    setIsLoading(false);
+    setIsTyping(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -227,14 +276,34 @@ function App() {
         }}
       >
         {showLanding ? (
-          <LandingPage onGetStarted={handleGetStarted} />
+          <>
+            <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+              <ThemeToggle
+                isDarkMode={isDarkMode}
+                onToggle={handleThemeToggle}
+              />
+            </Box>
+            <LandingPage onGetStarted={handleGetStarted} />
+          </>
         ) : !isSetupComplete ? (
-          <SetupDialog onSetupComplete={handleSetupComplete} />
+          <>
+            <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+              <ThemeToggle
+                isDarkMode={isDarkMode}
+                onToggle={handleThemeToggle}
+              />
+            </Box>
+            <SetupDialog onSetupComplete={handleSetupComplete} />
+          </>
         ) : (
           <>
             <Header
               title="Interview Assistant"
               audioControlsProps={audioControlsProps}
+              onConfigureClick={handleConfigureClick}
+              isRecording={isListening}
+              isDarkMode={isDarkMode}
+              onThemeToggle={handleThemeToggle}
             />
             <Box
               sx={{
