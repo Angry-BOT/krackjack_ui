@@ -8,6 +8,7 @@ import {
   Snackbar,
   Button,
 } from "@mui/material";
+import LandingPage from "./components/LandingPage";
 import SetupDialog from "./components/SetupDialog";
 import ChatInterface from "./components/ChatInterface";
 import Header from "./components/Header";
@@ -68,6 +69,7 @@ const theme = createTheme({
 });
 
 function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [intervieweeBackground, setIntervieweeBackground] = useState("");
@@ -209,6 +211,10 @@ function App() {
     isListening,
   };
 
+  const handleGetStarted = () => {
+    setShowLanding(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -220,7 +226,9 @@ function App() {
           bgcolor: "background.default",
         }}
       >
-        {!isSetupComplete ? (
+        {showLanding ? (
+          <LandingPage onGetStarted={handleGetStarted} />
+        ) : !isSetupComplete ? (
           <SetupDialog onSetupComplete={handleSetupComplete} />
         ) : (
           <>
