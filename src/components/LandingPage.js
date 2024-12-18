@@ -10,13 +10,14 @@ const LandingPage = ({ onGetStarted }) => {
     <Container maxWidth="lg">
       <Box
         sx={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
           gap: 4,
+          position: "relative",
         }}
       >
         <motion.div
@@ -87,6 +88,33 @@ const LandingPage = ({ onGetStarted }) => {
           >
             Get Started
           </Button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          style={{
+            position: "absolute",
+            bottom: 20,
+            width: "100%",
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              color: "text.secondary",
+              fontSize: "1rem",
+              fontStyle: "italic",
+              opacity: 0.8,
+              "&:hover": {
+                opacity: 1,
+              },
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            This application does not support cheating but your wish 😉
+          </Typography>
         </motion.div>
       </Box>
     </Container>
