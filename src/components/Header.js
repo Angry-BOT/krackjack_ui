@@ -1,8 +1,19 @@
-import React from "react";
-import { AppBar, Toolbar, Typography, Box, Icon } from "@mui/material";
+import React, { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Box,
+  Icon,
+  IconButton,
+  Tooltip,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
-import { Hash } from "lucide-react";
+import { Hash, Settings } from "lucide-react";
 import AudioControls from "./AudioControls";
+import ThemeToggle from "./ThemeToggle";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -11,34 +22,102 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   boxShadow: "none",
 }));
 
-const Header = ({ title, audioControlsProps }) => {
+const Header = ({
+  title,
+  audioControlsProps,
+  onConfigureClick,
+  isRecording,
+  isDarkMode,
+  onThemeToggle,
+}) => {
+  const [showWarning, setShowWarning] = useState(false);
+
+  const handleSetupClick = () => {
+    if (isRecording) {
+      setShowWarning(true);
+    } else {
+      onConfigureClick();
+    }
+  };
+
   return (
-    <StyledAppBar position="sticky">
-      <Toolbar
-        sx={{
-          justifyContent: "space-between",
-          minHeight: 64,
-          px: { xs: 2, sm: 4 },
-        }}
+    <>
+      <StyledAppBar position="sticky">
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            minHeight: 64,
+            px: { xs: 2, sm: 4 },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: "primary.main",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Icon component={Hash} sx={{ fontSize: 24 }} />
+              {title}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <AudioControls {...audioControlsProps} />
+            <ThemeToggle isDarkMode={isDarkMode} onToggle={onThemeToggle} />
+            <Tooltip
+              title={isRecording ? "Stop recording to access setup" : "Setup"}
+              placement="bottom"
+            >
+              <span>
+                <IconButton
+                  onClick={handleSetupClick}
+                  disabled={isRecording}
+                  sx={{
+                    color: "text.secondary",
+                    "&:hover": {
+                      color: "primary.main",
+                      backgroundColor: (theme) =>
+                        alpha(theme.palette.primary.main, 0.08),
+                    },
+                    "&.Mui-disabled": {
+                      color: "text.disabled",
+                    },
+                  }}
+                >
+                  <Settings size={20} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        </Toolbar>
+      </StyledAppBar>
+
+      <Snackbar
+        open={showWarning}
+        autoHideDuration={4000}
+        onClose={() => setShowWarning(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography
-            variant="h6"
-            sx={{
-              color: "primary.main",
-              fontWeight: 500,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <Icon component={Hash} sx={{ fontSize: 24 }} />
-            {title}
-          </Typography>
-        </Box>
-        <AudioControls {...audioControlsProps} />
-      </Toolbar>
-    </StyledAppBar>
+        <Alert
+          onClose={() => setShowWarning(false)}
+          severity="warning"
+          sx={{
+            width: "100%",
+            backgroundColor: (theme) => alpha(theme.palette.warning.main, 0.1),
+            color: "warning.main",
+            "& .MuiAlert-icon": {
+              color: "warning.main",
+            },
+          }}
+        >
+          Please stop the recording session before accessing setup
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
