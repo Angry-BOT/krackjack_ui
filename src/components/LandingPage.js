@@ -1,10 +1,19 @@
 import React from "react";
-import { Box, Typography, Button, Container, useTheme } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 const LandingPage = ({ onGetStarted }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
     <Container maxWidth="lg">
@@ -16,8 +25,9 @@ const LandingPage = ({ onGetStarted }) => {
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
-          gap: 4,
+          gap: { xs: 3, sm: 4, md: 4 },
           position: "relative",
+          px: { xs: 2, sm: 4, md: 6 },
         }}
       >
         <motion.div
@@ -28,14 +38,20 @@ const LandingPage = ({ onGetStarted }) => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: "3rem", md: "4.5rem" },
+              fontSize: {
+                xs: "2rem",
+                sm: "2.5rem",
+                md: "3.5rem",
+                lg: "4.5rem",
+              },
               fontWeight: 700,
               color: "text.primary",
               textShadow:
                 theme.palette.mode === "dark"
                   ? "0 0 20px rgba(255, 255, 255, 0.1)"
                   : "0 0 20px rgba(0, 0, 0, 0.1)",
-              mb: 2,
+              mb: { xs: 1, sm: 2 },
+              wordBreak: "break-word",
             }}
           >
             Welcome to Krackjack
@@ -50,10 +66,18 @@ const LandingPage = ({ onGetStarted }) => {
           <Typography
             variant="h2"
             sx={{
-              fontSize: { xs: "1.5rem", md: "2rem" },
+              fontSize: {
+                xs: "1.2rem",
+                sm: "1.5rem",
+                md: "1.8rem",
+                lg: "2rem",
+              },
               fontWeight: 500,
               color: "text.secondary",
-              mb: 6,
+              mb: { xs: 4, sm: 6 },
+              px: { xs: 2, sm: 4 },
+              maxWidth: { sm: "80%", md: "100%" },
+              mx: "auto",
             }}
           >
             Ace your interviews with AI-powered preparation
@@ -67,13 +91,13 @@ const LandingPage = ({ onGetStarted }) => {
         >
           <Button
             variant="contained"
-            size="large"
+            size={isMobile ? "medium" : "large"}
             onClick={onGetStarted}
             endIcon={<ArrowRight />}
             sx={{
-              fontSize: "1.2rem",
-              py: 2,
-              px: 6,
+              fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
+              py: { xs: 1.5, sm: 2 },
+              px: { xs: 4, sm: 6 },
               borderRadius: 3,
               textTransform: "none",
               background: "linear-gradient(45deg, #8ab4f8 30%, #81c995 90%)",
@@ -96,7 +120,7 @@ const LandingPage = ({ onGetStarted }) => {
           transition={{ duration: 0.8, delay: 0.6 }}
           style={{
             position: "absolute",
-            bottom: 20,
+            bottom: isMobile ? 10 : 20,
             width: "100%",
           }}
         >
@@ -104,9 +128,10 @@ const LandingPage = ({ onGetStarted }) => {
             variant="body1"
             sx={{
               color: "text.secondary",
-              fontSize: "1rem",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
               fontStyle: "italic",
               opacity: 0.8,
+              px: 2,
               "&:hover": {
                 opacity: 1,
               },

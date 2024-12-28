@@ -46,11 +46,20 @@ const Header = ({
         <Toolbar
           sx={{
             justifyContent: "space-between",
-            minHeight: 64,
-            px: { xs: 2, sm: 4 },
+            minHeight: { xs: 56, sm: 64 },
+            px: { xs: 1, sm: 2, md: 4 },
+            gap: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              "& .MuiTypography-root": {
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+              },
+            }}
+          >
             <Typography
               variant="h6"
               sx={{
@@ -65,7 +74,16 @@ const Header = ({
               {title}
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: { xs: 1, sm: 2 },
+              "& .MuiIconButton-root": {
+                padding: { xs: 1, sm: 1.5 },
+              },
+            }}
+          >
             <AudioControls {...audioControlsProps} />
             <ThemeToggle isDarkMode={isDarkMode} onToggle={onThemeToggle} />
             <Tooltip

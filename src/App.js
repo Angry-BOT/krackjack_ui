@@ -145,7 +145,8 @@ function App() {
     };
 
     socketRef.current.onmessage = (event) => {
-      lastMessageTime.current = Date.now(); // Update last message time
+      console.log("WebSocket message received:", event.data);
+      lastMessageTime.current = Date.now();
       const response = JSON.parse(event.data);
       if (response.type === "transcription") {
         console.log("Processing transcription:", response.content);
@@ -222,7 +223,12 @@ function App() {
 
   const addMessage = (sender, content) => {
     console.log(`Adding new message from ${sender}:`, content);
-    setMessages((prevMessages) => [...prevMessages, { sender, content }]);
+    setMessages((prevMessages) => {
+      console.log("Previous messages:", prevMessages);
+      const newMessages = [...prevMessages, { sender, content }];
+      console.log("Updated messages:", newMessages);
+      return newMessages;
+    });
   };
 
   const handleStartRecording = () => {
