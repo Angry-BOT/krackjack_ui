@@ -28,19 +28,36 @@ function SetupDialog({ onSetupComplete }) {
   };
 
   return (
-    <StyledDialog open={true} fullWidth>
+    <StyledDialog
+      open={true}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          margin: { xs: 2, sm: 4 },
+          width: { xs: "calc(100% - 32px)", sm: "auto" },
+          maxHeight: { xs: "calc(100% - 32px)", sm: "auto" },
+        },
+      }}
+    >
       <DialogTitle
         sx={{
           textAlign: "center",
-          fontSize: "1.5rem",
+          fontSize: { xs: "1.25rem", sm: "1.5rem" },
           fontWeight: 500,
           color: "primary.main",
+          py: { xs: 2, sm: 3 },
         }}
       >
         Interview Assistant Setup
       </DialogTitle>
       <form onSubmit={handleSubmit}>
-        <DialogContent sx={{ py: 3 }}>
+        <DialogContent
+          sx={{
+            py: { xs: 2, sm: 3 },
+            px: { xs: 2, sm: 3 },
+          }}
+        >
           <TextField
             fullWidth
             margin="normal"
@@ -76,7 +93,13 @@ function SetupDialog({ onSetupComplete }) {
             required
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, justifyContent: "center" }}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            justifyContent: "center",
+          }}
+        >
           <Button
             type="submit"
             variant="contained"

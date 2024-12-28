@@ -6,6 +6,8 @@ import {
   Paper,
   Box,
   alpha,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { UserCircle } from "lucide-react";
@@ -61,27 +63,30 @@ const TypewriterText = ({ text }) => {
 };
 
 const parseMessageContent = (content) => {
-  if (!content) return [];
-
-  const codeBlockRegex = /```([\w]*)\n([\s\S]*?)```/g;
   const parts = [];
+  const codeBlockRegex = /```([\s\S]*?)```/g;
+  const bulletPointRegex = /^[•\-\*]\s(.+)$/gm;
+  const numberedListRegex = /^\d+\.\s(.+)$/gm;
+  const boldRegex = /\*\*(.*?)\*\*/g;
+
   let lastIndex = 0;
   let match;
 
   while ((match = codeBlockRegex.exec(content)) !== null) {
     // Add text before code block
     if (match.index > lastIndex) {
+      const textContent = content.slice(lastIndex, match.index);
       parts.push({
         type: "text",
-        content: content.slice(lastIndex, match.index),
+        content: textContent,
+        format: detectTextFormat(textContent),
       });
     }
 
     // Add code block
     parts.push({
       type: "code",
-      language: match[1],
-      content: match[2].trim(),
+      content: match[1],
     });
 
     lastIndex = match.index + match[0].length;
@@ -89,46 +94,118 @@ const parseMessageContent = (content) => {
 
   // Add remaining text
   if (lastIndex < content.length) {
+    const textContent = content.slice(lastIndex);
     parts.push({
       type: "text",
-      content: content.slice(lastIndex),
+      content: textContent,
+      format: detectTextFormat(textContent),
     });
   }
 
   return parts;
 };
 
+const detectTextFormat = (text) => {
+  // Check if the text starts with a bullet or number at the beginning of a line
+  const lines = text.split("\n");
+  const firstNonEmptyLine = lines.find((line) => line.trim().length > 0);
+
+  if (!firstNonEmptyLine) return "normal";
+
+  const bulletPointRegex = /^[•\-\*]\s(.+)$/;
+  const numberedListRegex = /^\d+\.\s(.+)$/;
+
+  if (bulletPointRegex.test(firstNonEmptyLine)) return "bullet";
+  if (numberedListRegex.test(firstNonEmptyLine)) return "numbered";
+  return "normal";
+};
+
+const formatTextWithBold = (text) => {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <Typography key={index} component="span" sx={{ fontWeight: 700 }}>
+          {part.slice(2, -2)}
+        </Typography>
+      );
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 const MessageContent = ({ content }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const parts = parseMessageContent(content);
 
-  return (
-    <>
-      {parts.map((part, index) =>
-        part.type === "code" ? (
-          <CodeBlock
-            key={index}
-            content={part.content}
-            language={part.language}
-          />
-        ) : (
-          <Typography
-            key={index}
-            sx={{
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              lineHeight: 1.6,
-              fontSize: "1rem",
-              color: "text.primary",
-              "@media (max-width: 600px)": {
-                fontSize: "0.95rem",
+  const renderTextContent = (text, format) => {
+    if (format === "bullet" || format === "numbered") {
+      const lines = text.split("\n");
+      return (
+        <Box
+          component="ul"
+          sx={{
+            pl: 3,
+            listStyle: format === "bullet" ? "disc" : "decimal",
+            "& li": {
+              mb: 1,
+              pl: 1,
+              "&::marker": {
+                color: theme.palette.primary.main,
               },
-            }}
-          >
-            {part.content}
-          </Typography>
-        )
-      )}
-    </>
+            },
+          }}
+        >
+          {lines.map((line, idx) => {
+            if (!line.trim()) return null;
+            const cleanLine = line.replace(/^[•\-\*\d+\.]\s/, "").trim();
+            if (cleanLine) {
+              return <li key={idx}>{formatTextWithBold(cleanLine)}</li>;
+            }
+            return null;
+          })}
+        </Box>
+      );
+    }
+
+    return (
+      <Typography
+        variant="body1"
+        component="div"
+        sx={{
+          mb: 2,
+          whiteSpace: "pre-wrap",
+          lineHeight: 1.6,
+        }}
+      >
+        {formatTextWithBold(text)}
+      </Typography>
+    );
+  };
+
+  return (
+    <Box
+      sx={{
+        fontSize: { xs: "0.875rem", sm: "1rem" },
+        "& pre": {
+          maxWidth: "100%",
+          overflow: "auto",
+        },
+        "& code": {
+          fontSize: { xs: "0.8rem", sm: "0.9rem" },
+        },
+      }}
+    >
+      {parts.map((part, index) => {
+        if (part.type === "code") {
+          return <CodeBlock key={index} content={part.content} />;
+        } else {
+          return renderTextContent(part.content, part.format);
+        }
+      })}
+    </Box>
   );
 };
 
@@ -144,10 +221,10 @@ const ChatInterface = ({ messages, isLoading, isTyping, isListening }) => {
   return (
     <Box
       sx={{
-        height: "100%",
-        overflowY: "auto",
-        padding: 2,
-        backgroundColor: (theme) => theme.palette.background.default,
+        p: { xs: 1.5, sm: 2, md: 4 },
+        maxWidth: "100%",
+        margin: "0 auto",
+        overflowX: "hidden",
       }}
     >
       <AnimatePresence>
