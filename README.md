@@ -1,6 +1,6 @@
 # krackjack_ui
 
-A interview assistant webapp for craking all kind of interviews.
+A interview assistant webapp for preparing for all kind of interviews.
 
 # Getting Started with Create React App
 
